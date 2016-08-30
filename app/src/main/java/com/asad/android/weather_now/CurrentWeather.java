@@ -117,10 +117,15 @@ public String getFormattedTime()
     }
 
     public String getSummary() {
+        if(mSummary == "Clear")
+        {
+            mSummary = "Clear Skies";
+        }
         return mSummary;
     }
 
     public void setSummary(String summary) {
+
         mSummary = summary;
     }
 
