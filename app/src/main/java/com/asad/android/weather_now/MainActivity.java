@@ -1,6 +1,7 @@
 package com.asad.android.weather_now;
 
-import android.app.FragmentManager;
+import android.*;
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -12,10 +13,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -24,8 +22,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.location.LocationServices;
 
 
 import org.json.JSONException;
@@ -75,29 +71,33 @@ public class MainActivity extends AppCompatActivity {
     double latitude;
     double longitude;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        ButterKnife.bind(this);
+    private void getLocation()
+    {
+
+        int hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if(hasPermission == PackageManager.PERMISSION_DENIED)
+        {
+            int requestCode = 0;
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, requestCode );
+            Toast.makeText(this, "Location Denied", Toast.LENGTH_SHORT).show();
+        }
+
+
+        Toast.makeText(MainActivity.this, "Location access accepted", Toast.LENGTH_SHORT).show();
+
+
 
 
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: ADD ALERT DIALOG
-            Toast.makeText(MainActivity.this, "Cant find location", Toast.LENGTH_SHORT).show();
-            return;
-        }
+
         Location location = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
         if(location==null)
             Toast.makeText(MainActivity.this, "Location is null", Toast.LENGTH_SHORT).show();
-        
+
         latitude = location.getLatitude();
         longitude = location.getLongitude();
-        Toast.makeText(MainActivity.this, "SUCESS!!", Toast.LENGTH_SHORT).show();
 
 
         Geocoder geoCoder = new Geocoder(this, Locale.getDefault());
@@ -105,13 +105,13 @@ public class MainActivity extends AppCompatActivity {
         try {
             List<Address> address = geoCoder.getFromLocation(latitude, longitude, 1);
 
-                String addressCity = address.get(0).getLocality();
-                String addressProvince = address.get(0).getAdminArea();
-                String addressCountry = address.get(0).getCountryCode();
+            String addressCity = address.get(0).getLocality();
+            String addressProvince = address.get(0).getAdminArea();
+            String addressCountry = address.get(0).getCountryCode();
 
-                builder.append(addressCity);
+            builder.append(addressCity);
             //    builder.append(",");
-          //      builder.append(addressProvince);
+            //      builder.append(addressProvince);
 
 
 
@@ -122,6 +122,20 @@ public class MainActivity extends AppCompatActivity {
         catch (IOException e)
         {}
         catch (NullPointerException e){}
+
+
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        ButterKnife.bind(this);
+
+        getLocation();
 
         mProgressBar.setVisibility(View.INVISIBLE);
 
@@ -167,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
                             toggleRefresh();
                         }
                     });
-                    alertUserAboutError();
+                    errorPopUp();
 
                 }
 
@@ -194,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
                             });
 
                         } else {
-                            alertUserAboutError();
+                            errorPopUp();
                         }
                     } catch (IOException e) {
                         Log.e(TAG, "Exception caught: ", e);
@@ -265,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
         return isAvailable;
     }
 
-    private void alertUserAboutError() {
+    private void errorPopUp() {
 
 
         AlertDialogFragment dialog = new AlertDialogFragment();
