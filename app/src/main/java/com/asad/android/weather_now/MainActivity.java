@@ -105,9 +105,15 @@ public class MainActivity extends AppCompatActivity {
         try {
             List<Address> address = geoCoder.getFromLocation(latitude, longitude, 1);
 
-                String addressStr = address.get(0).getLocality();
-                builder.append(addressStr);
-                builder.append(" ");
+                String addressCity = address.get(0).getLocality();
+                String addressProvince = address.get(0).getAdminArea();
+                String addressCountry = address.get(0).getCountryCode();
+
+                builder.append(addressCity);
+            //    builder.append(",");
+          //      builder.append(addressProvince);
+
+
 
 
 
