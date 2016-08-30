@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Weather-Now</string>
+    <string name="error_title">Sorry!</string>
+    <string name="error_message">There was an error. Please try again.</string>
+    <string name="error_ok_button_text">OK</string>
+    <string name="nework_unavailable_message">Network is unavailable!</string>
+</resources>
