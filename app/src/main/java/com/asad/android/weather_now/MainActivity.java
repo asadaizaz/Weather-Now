@@ -1,15 +1,10 @@
 package com.asad.android.weather_now;
 
-import android.*;
 import android.Manifest;
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
@@ -25,7 +20,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,59 +67,62 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
     double latitude;
     double longitude;
+    private int MY_PERMISSION;
 
+    private int degree = CurrentWeather.DEGREE_CELSIUS;
+    private void getLocation() {
 
-    private void getLocation()
-    {
-
-        int hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if(hasPermission == PackageManager.PERMISSION_DENIED)
+//        int hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+//        Toast.makeText(MainActivity.this, "CHECKING PREMISS", Toast.LENGTH_SHORT).show();
+//        if (hasPermission == PackageManager.PERMISSION_DENIED) {
+//            int requestCode = 0;
+//            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, requestCode);
+//            Toast.makeText(this, "Location Denied", Toast.LENGTH_SHORT).show();
+//        }
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED)
         {
-            int requestCode = 0;
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, requestCode );
-            Toast.makeText(this, "Location Denied", Toast.LENGTH_SHORT).show();
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MY_PERMISSION );
         }
 
 
-        Toast.makeText(MainActivity.this, "Location access accepted", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(MainActivity.this, "Location access accepted", Toast.LENGTH_SHORT).show();
 
 
+            mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 
-        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            Location location = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+            if (location == null)
+                Toast.makeText(MainActivity.this, "Location is null", Toast.LENGTH_SHORT).show();
+
+            latitude = location.getLatitude();
+            longitude = location.getLongitude();
 
 
-        Location location = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-        if(location==null)
-            Toast.makeText(MainActivity.this, "Location is null", Toast.LENGTH_SHORT).show();
+            Geocoder geoCoder = new Geocoder(this, Locale.getDefault());
+            StringBuilder builder = new StringBuilder();
+            try {
+                List<Address> address = geoCoder.getFromLocation(latitude, longitude, 1);
 
-        latitude = location.getLatitude();
-        longitude = location.getLongitude();
+                String addressCity = address.get(0).getLocality();
+             //   String addressProvince = address.get(0).getAdminArea();
+                String addressCountry = address.get(0).getCountryCode();
 
-
-        Geocoder geoCoder = new Geocoder(this, Locale.getDefault());
-        StringBuilder builder = new StringBuilder();
-        try {
-            List<Address> address = geoCoder.getFromLocation(latitude, longitude, 1);
-
-            String addressCity = address.get(0).getLocality();
-            String addressProvince = address.get(0).getAdminArea();
-            String addressCountry = address.get(0).getCountryCode();
-
-            builder.append(addressCity);
-            //    builder.append(",");
-            //      builder.append(addressProvince);
+                if(addressCountry == "US")
+                    degree = CurrentWeather.DEGREE_FARENHIET;
 
 
+                Log.d(TAG, addressCountry);
+                builder.append(addressCity);
+                //    builder.append(",");
+                //      builder.append(addressProvince);
 
 
-
-            loc = builder.toString();
-        }
-        catch (IOException e)
-        {}
-        catch (NullPointerException e){}
-
+                loc = builder.toString();
+            } catch (IOException e) {
+            } catch (NullPointerException e) {
+            }
 
     }
 
@@ -158,12 +155,12 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Main UI code is running");
     }
 
-//    @Override
-//    protected void onResume()
-//    {
-//        super.onResume();
-//        getForecast(latitude, longitude);
-//    }
+        @Override
+    protected void onResume()
+   {
+        super.onResume();
+        getForecast(latitude, longitude);
+    }
     private void getForecast(double latitude, double longitude) {
         String apiKey = "406c3c1c926fc6b6731c75a69641d031";
 
@@ -243,13 +240,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateDisplay() {
-        mTemperatureLabel.setText(mCurrentWeather.getTemperature() + "");
+
         mTimeLabel.setText("At " + mCurrentWeather.getFormattedTime() + " it will be");
         mHumidityValue.setText(mCurrentWeather.getHumidity() + "");
         mPrecipValue.setText(mCurrentWeather.getPrecipChance() + "%");
         mSummaryLabel.setText(mCurrentWeather.getSummary());
         mLocationLabel.setText(mCurrentWeather.getLocationLabel());
-
+        mTemperatureLabel.setText(""+(mCurrentWeather.getTemperature(degree)));
         Drawable drawable = getResources().getDrawable(mCurrentWeather.getIconId());
         mImageView.setImageDrawable(drawable);
     }
@@ -267,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
         currentWeather.setTime(currently.getLong("time"));
         currentWeather.setPrecipChance(currently.getDouble("precipProbability"));
         currentWeather.setSummary(currently.getString("summary"));
-        currentWeather.setTemperature(currently.getDouble("temperature"));
+        currentWeather.setTemperature( currently.getDouble("temperature"));
         currentWeather.setTimeZone(timeZone);
         currentWeather.setLocationLabel(loc);
         Log.d(TAG, currentWeather.getFormattedTime());
@@ -298,10 +295,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-
-
-    }
+}
 
 
