@@ -2,8 +2,11 @@ package com.asad.android.weather_now;
 
 import android.*;
 import android.Manifest;
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Criteria;
@@ -155,6 +158,12 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Main UI code is running");
     }
 
+//    @Override
+//    protected void onResume()
+//    {
+//        super.onResume();
+//        getForecast(latitude, longitude);
+//    }
     private void getForecast(double latitude, double longitude) {
         String apiKey = "406c3c1c926fc6b6731c75a69641d031";
 
